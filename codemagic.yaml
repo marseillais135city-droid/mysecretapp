@@ -11,6 +11,12 @@ workflows:
         script: npm install
       - name: Expo prebuild
         script: npx expo prebuild --platform ios --no-install
+      - name: Patch Xcode Project (The Fix)
+        script: |
+          # Ce script force CHAQUE cible du projet à ne pas demander de signature
+          cd ios
+          sed -i '' 's/CODE_SIGNING_ALLOWED = YES/CODE_SIGNING_ALLOWED = NO/g' *.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGNING_REQUIRED = YES/CODE_SIGNING_REQUIRED = NO/g' *.xcodeproj/project.pbxproj
       - name: Install Pods
         script: |
           cd ios
@@ -19,7 +25,6 @@ workflows:
         script: |
           cd ios
           mkdir -p ../dist
-          # On change un peu la commande pour aider le compilateur Swift
           xcodebuild build \
             -workspace *.xcworkspace \
             -scheme $(ls -d *.xcworkspace | cut -d. -f1) \
@@ -31,8 +36,8 @@ workflows:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             AD_HOC_CODE_SIGNING_ALLOWED=YES \
-            STRIP_INSTALLED_PRODUCT=NO \
-            GCC_GENERATE_DEBUGGING_SYMBOLS=NO
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            SWIFT_COMPILATION_MODE=wholemodule
       - name: Package IPA
         script: |
           mkdir Payload
