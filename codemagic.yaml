@@ -4,15 +4,17 @@ workflows:
     instance_type: mac_mini_m1
     max_build_duration: 30
     environment:
-      node: 18
-      xcode: latest # On force la dernière version stable
+      node: 20 # <--- On passe à Node 20 pour supporter Expo 54
+      xcode: latest
     scripts:
       - name: Install dependencies
         script: npm install
       - name: Expo prebuild
-        script: npx expo prebuild --platform ios --template blank
-      - name: Fix CocoaPods
-        script: cd ios && pod install # On force l'installation des pods proprement
+        script: npx expo prebuild --platform ios --no-install
+      - name: Install Pods
+        script: |
+          cd ios
+          pod install
       - name: Build unsigned .app
         script: |
           cd ios
