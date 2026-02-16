@@ -1,0 +1,34 @@
+workflows:
+  ios-trollstore:
+    name: Build pour TrollStore
+    instance_type: mac_mini_m1
+    max_build_duration: 30
+    environment:
+      node: 18
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Expo prebuild
+        script: npx expo prebuild --platform ios
+      - name: Build unsigned .app
+        script: |
+          cd ios
+          mkdir -p ../dist
+          xcodebuild build \
+            -workspace *.xcworkspace \
+            -scheme $(ls -d *.xcworkspace | cut -d. -f1) \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CONFIGURATION_BUILD_DIR=../dist \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
+      - name: Package IPA
+        script: |
+          mkdir Payload
+          cp -r dist/*.app Payload/
+          zip -r MySecretApp.ipa Payload
+    artifacts:
+      - "*.ipa"
