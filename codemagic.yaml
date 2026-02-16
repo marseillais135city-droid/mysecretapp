@@ -4,7 +4,7 @@ workflows:
     instance_type: mac_mini_m1
     max_build_duration: 30
     environment:
-      node: 20 # <--- On passe à Node 20 pour supporter Expo 54
+      node: 20
       xcode: latest
     scripts:
       - name: Install dependencies
@@ -19,6 +19,7 @@ workflows:
         script: |
           cd ios
           mkdir -p ../dist
+          # On change un peu la commande pour aider le compilateur Swift
           xcodebuild build \
             -workspace *.xcworkspace \
             -scheme $(ls -d *.xcworkspace | cut -d. -f1) \
@@ -30,7 +31,8 @@ workflows:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             AD_HOC_CODE_SIGNING_ALLOWED=YES \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            STRIP_INSTALLED_PRODUCT=NO \
+            GCC_GENERATE_DEBUGGING_SYMBOLS=NO
       - name: Package IPA
         script: |
           mkdir Payload
