@@ -1,6 +1,6 @@
 name: Build TrollStore IPA
 on:
-  workflow_dispatch: # Ajoute un bouton pour lancer le build manuellement
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,21 +18,17 @@ jobs:
         run: npm install
 
       - name: 🔧 Expo Prebuild
-        # Génère les dossiers ios/android natifs
-        run: npx expo prebuild --platform ios --no-interactive
+        run: npx expo prebuild --platform ios
 
       - name: 🔨 Construire l'App (Unsigned ARM64)
         run: |
           cd ios
-          # Force la compilation pour l'iPhone (ARM64) sans signature
           xcodebuild -workspace *.xcworkspace -scheme $(ls -d *.xcworkspace | cut -d. -f1) -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO clean build archive -archivePath ../build/App.xcarchive
       
       - name: 🎁 Créer l'IPA
         run: |
           mkdir Payload
-          # Copie l'app compilée dans le dossier Payload
           cp -r build/App.xcarchive/Products/Applications/*.app Payload/
-          # Zippe le tout
           zip -r MySecretApp.ipa Payload
 
       - name: 📤 Téléverser l'IPA
