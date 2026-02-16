@@ -5,11 +5,14 @@ workflows:
     max_build_duration: 30
     environment:
       node: 18
+      xcode: latest # On force la dernière version stable
     scripts:
       - name: Install dependencies
         script: npm install
       - name: Expo prebuild
-        script: npx expo prebuild --platform ios
+        script: npx expo prebuild --platform ios --template blank
+      - name: Fix CocoaPods
+        script: cd ios && pod install # On force l'installation des pods proprement
       - name: Build unsigned .app
         script: |
           cd ios
@@ -24,7 +27,8 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            AD_HOC_CODE_SIGNING_ALLOWED=YES
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            COMPILER_INDEX_STORE_ENABLE=NO
       - name: Package IPA
         script: |
           mkdir Payload
